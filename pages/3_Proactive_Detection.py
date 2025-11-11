@@ -87,7 +87,7 @@ whisper_model = load_whisper_model()
 yolo_model = load_yolo_model()
 
 # --- 4. Streamlit App UI ---
-st.title("✨ 'Wow' Features: Proactive AI Detection")
+st.title("✨ Advanced Features: Proactive AI Detection")
 st.markdown("This page demonstrates the advanced 'proactive' capabilities from our research, showing how AI can *generate* new, high-value data, not just analyze existing complaints.")
 
 tab1, tab2, tab3 = st.tabs([
