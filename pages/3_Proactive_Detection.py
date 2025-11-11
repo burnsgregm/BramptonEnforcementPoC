@@ -140,7 +140,7 @@ with tab1:
 # --- TAB 2: AI Violation Detection ---
 with tab2:
     st.header("Proactive CV Detection")
-    st.markdown("This simulates the 'Stockton Model'. A city vehicle with a camera uses AI to find violations *without* a 311 call. Upload an image (like the `sample_violation.jpg` from the repo's `data` folder).")
+    st.markdown("This simulates the 'Stockton Model'. A city vehicle with a camera uses AI to find violations without a 311 call. Upload an image (like the `sample_violation.jpg` from the repo's `data` folder).")
 
     uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
