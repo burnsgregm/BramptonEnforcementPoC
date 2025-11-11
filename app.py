@@ -32,7 +32,7 @@ st.markdown("View a simulated, live dashboard of all by-law complaints. Analyze 
 st.page_link("pages/2_Case_Management.py", label="**2. Case Management Workflow**", icon="👩‍⚖️")
 st.markdown("Select a complaint from the list to see the GenAI workflow. Generate an AI-powered 'on-site briefing' and draft a 'resident-friendly' closure message.")
 
-st.page_link("pages/3_Proactive_Detection.py", label="**3. 'Wow' - Proactive Detection**", icon="✨")
+st.page_link("pages/3_Proactive_Detection.py", label="**3. Proactive Detection**", icon="✨")
 st.markdown("See the 'proactive' AI features in action, including transcribing 311 calls with Whisper, extracting data with Gemini, and detecting violations with a YOLOv8 Computer Vision model.")
 
 st.header("Mock Data")
