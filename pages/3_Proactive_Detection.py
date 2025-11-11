@@ -10,7 +10,7 @@ from ultralytics import YOLO
 from PIL import Image
 import json
 import re
-import numpy as np
+import numpy as np  # <-- THIS IS THE FIX
 
 APP_TITLE = "By-Law Operations Co-Pilot (PoC)"
 MOCK_DATA_FILE = "complaints.csv"
@@ -87,7 +87,7 @@ whisper_model = load_whisper_model()
 yolo_model = load_yolo_model()
 
 # --- 4. Streamlit App UI ---
-st.title("✨ Advanced Features: Proactive AI Detection")
+st.title("✨ 'Wow' Features: Proactive AI Detection")
 st.markdown("This page demonstrates the advanced 'proactive' capabilities from our research, showing how AI can *generate* new, high-value data, not just analyze existing complaints.")
 
 tab1, tab2, tab3 = st.tabs([
@@ -106,4 +106,87 @@ with tab1:
     if uploaded_audio is not None:
         st.audio(uploaded_audio, format='audio/m4a')
         
-        if st.button("Transcribe & Extract Entities", use_container
+        if st.button("Transcribe & Extract Entities", use_container_width=True):
+            with st.spinner("Transcribing audio with Whisper..."):
+                # Save temp file
+                with open("temp_audio.m4a", "wb") as f:
+                    f.write(uploaded_audio.getbuffer())
+                
+                result = whisper_model.transcribe("temp_audio.m4a")
+                transcript = result['text']
+            
+            st.subheader("1. AI-Generated Transcript")
+            st.info(transcript)
+            
+            with st.spinner("Extracting entities with Gemini..."):
+                try:
+                    prompt_int = ChatPromptTemplate.from_template(INTAKE_PROMPT_TEMPLATE)
+                    chain_int = prompt_int | llm
+                    response_int = chain_int.invoke({"transcript": transcript})
+                    
+                    # Clean the JSON output from markdown
+                    json_match = re.search(r"```json\n([\s\S]*?)\n```", response_int.content, re.IGNORECASE)
+                    if json_match:
+                        json_str = json_match.group(1)
+                    else:
+                        json_str = response_int.content
+
+                    st.subheader("2. Auto-Filled Complaint Form (JSON)")
+                    st.json(json_str)
+                except Exception as e:
+                    st.error(f"API Error. Free tier quota may be exceeded. Please wait a minute and try again. {e}")
+            
+            os.remove("temp_audio.m4a")
+
+# --- TAB 2: AI Violation Detection ---
+with tab2:
+    st.header("Proactive CV Detection")
+    st.markdown("This simulates the 'Stockton Model'. A city vehicle with a camera uses AI to find violations *without* a 311 call. Upload an image (like the `sample_violation.jpg` from the repo's `data` folder).")
+
+    uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_image is not None:
+        image = Image.open(uploaded_image)
+        
+        if yolo_model:
+            with st.spinner("Analyzing image for violations..."):
+                results = yolo_model(image)
+                plotted_image = results[0].plot() # .plot() draws boxes on the image
+                
+            st.subheader("Processed Image with Detections")
+            st.image(plotted_image, caption="AI Detection (Model: YOLOv8-Pothole)", use_column_width=True)
+            
+            st.subheader("AI-Generated Proactive Case")
+            st.success("🤖 **Proactive Case Opened:** 'Illegal Debris/Pothole' detected at GPS 43.68, -79.75. Assigning to 'Property Standards' queue.")
+        else:
+            st.error("YOLO model not loaded. Check app logs.")
+
+# --- TAB 3: AI Hotspotting Simulation ---
+with tab3:
+    st.header("AI Predictive Hotspotting (Simulation)")
+    st.markdown("This simulates the 'data flywheel' concept. A predictive model fed with *only* 311 data is biased. Adding proactive CV data makes it smarter.")
+    
+    # Load data for mapping
+    # Note: 'df' is loaded in the session_state from page 1
+    if 'df' in st.session_state:
+        df = st.session_state.df
+        st.subheader("Data Source Selection")
+        data_source = st.selectbox(
+            "Select data source for predictive map:",
+            ("1. 311 Complaint Data Only (Biased)", "2. 311 + Proactive CV Data (Unbiased)")
+        )
+        
+        if data_source == "1. 311 Complaint Data Only (Biased)":
+            st.warning("**Showing Biased Data:** These hotspots are based only on where residents *report* issues (the 'squeaky wheel' problem). This model over-prioritizes some areas and misses others entirely.")
+            map_df = df[df['Status'] != 'Closed'][['GPS_Lat', 'GPS_Lon']]
+            map_df.rename(columns={'GPS_Lat': 'lat', 'GPS_Lon': 'lon'}, inplace=True)
+            st.map(map_df, zoom=10)
+        else:
+            st.success("**Showing Unbiased Data:** This map is smarter. It combines 311 data with the *proactive CV data* from our vehicles. This model finds violations city-wide, not just where people complain, leading to fairer and more efficient enforcement.")
+            # We'll just add some random noise to the coordinates to "simulate" the new data
+            map_df = df[df['Status'] != 'Closed'][['GPS_Lat', 'GPS_Lon']].copy() # Use .copy() to avoid warning
+            map_df['lat'] = map_df['GPS_Lat'] + (np.random.randn(len(map_df)) * 0.01)
+            map_df['lon'] = map_df['GPS_Lon'] + (np.random.randn(len(map_df)) * 0.01)
+            st.map(map_df[['lat', 'lon']], zoom=10)
+    else:
+        st.error("Data not found. Please visit the 'Analytics Dashboard' page first to load the data.")
