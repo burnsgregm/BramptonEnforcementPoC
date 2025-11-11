@@ -20,7 +20,7 @@ It demonstrates a "best-in-class" solution for the **Proactive Enforcement Respo
 This PoC simulates the entire "data flywheel":
 1.  **Analytics (Part A):** A live dashboard for analyzing and prioritizing complaint trends.
 2.  **Generation (Part B):** GenAI tools to automate officer workflows and generate resident-friendly messages.
-3.  **"Wow" Features:** Proactive AI tools for CV and audio intake.
+3.  **"Advanced Features:** Proactive AI tools for CV and audio intake.
 
 ---
 """)
